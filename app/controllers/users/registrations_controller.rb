@@ -3,7 +3,7 @@
 class Users::RegistrationsController < Devise::RegistrationsController
   include RackSessionFix
   respond_to :json
-  # before_action :configure_sign_up_params, only: [:create]
+  before_action :configure_sign_up_params, only: [:create]
   # before_action :configure_account_update_params, only: [:update]
 
   # GET /resource/sign_up
@@ -40,12 +40,12 @@ class Users::RegistrationsController < Devise::RegistrationsController
   #   super
   # end
 
-  # protected
+  protected
 
   # If you have extra params to permit, append them to the sanitizer.
-  # def configure_sign_up_params
-  #   devise_parameter_sanitizer.permit(:sign_up, keys: [:attribute])
-  # end
+  def configure_sign_up_params
+    devise_parameter_sanitizer.permit(:sign_up, keys: [:first_name, :last_name, :email, :password, :password_confirmation, :government_id])
+  end
 
   # If you have extra params to permit, append them to the sanitizer.
   # def configure_account_update_params
@@ -61,12 +61,14 @@ class Users::RegistrationsController < Devise::RegistrationsController
   # def after_inactive_sign_up_path_for(resource)
   #   super(resource)
   # end
+  
+  # Override the response method for JSON format
   private
 
   def respond_with(resource, _opts = {})
     if resource.persisted?
       render json: {
-        status: {code: 200, message: 'Signed up sucessfully.'},
+        status: {code: 200, message: 'Signed up successfully.'},
         data: UserSerializer.new(resource).serializable_hash[:data][:attributes]
       }
     else
