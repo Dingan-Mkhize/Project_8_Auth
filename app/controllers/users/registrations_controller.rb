@@ -12,9 +12,11 @@ class Users::RegistrationsController < Devise::RegistrationsController
   # end
 
   # POST /resource
-  # def create
-  #   super
-  # end
+  def create
+    Rails.logger.info "Received params: #{params.inspect}"
+
+    super
+  end
 
   # GET /resource/edit
   # def edit
@@ -45,7 +47,7 @@ class Users::RegistrationsController < Devise::RegistrationsController
   # If you have extra params to permit, append them to the sanitizer.
   def configure_sign_up_params
     devise_parameter_sanitizer.permit(:sign_up, keys: [:first_name, :last_name, :email, :password, :password_confirmation, :government_id])
-  end
+end
 
   # If you have extra params to permit, append them to the sanitizer.
   # def configure_account_update_params
@@ -72,6 +74,7 @@ class Users::RegistrationsController < Devise::RegistrationsController
         data: UserSerializer.new(resource).serializable_hash[:data][:attributes]
       }
     else
+      Rails.logger.debug resource.errors.full_messages.to_sentence
       render json: {
         status: {code: 422, message: "User couldn't be created successfully. #{resource.errors.full_messages.to_sentence}"}
       }, status: :unprocessable_entity
