@@ -3,38 +3,19 @@
 class Users::SessionsController < Devise::SessionsController
   include RackSessionFix
   respond_to :json
-  # before_action :configure_sign_in_params, only: [:create]
 
-  # GET /resource/sign_in
-  # def new
-  #   super
-  # end
-
-  # POST /resource/sign_in
-  # def create
-  #   super
-  # end
-
-  # DELETE /resource/sign_out
-  # def destroy
-  #   super
-  # end
-
-  # protected
-
-  # If you have extra params to permit, append them to the sanitizer.
-  # def configure_sign_in_params
-  #   devise_parameter_sanitizer.permit(:sign_in, keys: [:attribute])
-  # end
   private
 
   def respond_with(resource, _opts = {})
+    token = request.env['warden-jwt_auth.token']  # Retrieve the JWT token
+
     render json: {
       status: {
         code: 200, 
         message: 'Logged in successfully'
       }, 
-      data: UserSerializer.new(resource).serializable_hash[:data][:attributes]
+      data: UserSerializer.new(resource).serializable_hash[:data][:attributes],
+      token: token  # Ensure this line has a comma at the end if there are more elements in the hash
     }
   end
 
@@ -42,7 +23,7 @@ class Users::SessionsController < Devise::SessionsController
     if current_user
       render json: {
         status: 200,
-        message: "logged out successfully"
+        message: "Logged out"
       }, status: :ok
     else
       render json: {
@@ -51,4 +32,11 @@ class Users::SessionsController < Devise::SessionsController
       }, status: :unauthorized
     end
   end
+
+  # def refresh_token
+  #   return head(:unauthorized) unless current_user
+
+  #   new_token = Warden::JWTAuth::UserEncoder.new.call(current_user, :user, nil)
+  #   render json: { token: new_token[0], exp: Time.at(new_token[1]['exp']) }, status: :ok
+  # end
 end

@@ -10,7 +10,8 @@ Rails.application.config.middleware.insert_before 0, Rack::Cors do
     origins 'http://localhost:5173' # Replace with the origin of your React app
 
     resource '*',
-      headers: :any,
+      headers: :any, 
+      expose: ['Authorization', 'Access-Token', 'Uid'],
       methods: [:get, :post, :patch, :put, :delete, :options, :head],
       credentials: true
   end

@@ -20,6 +20,7 @@ gem "puma", "~> 5.0"
 
 gem 'devise'
 gem 'devise-jwt'
+gem 'warden-jwt_auth', '~> 0.8.0' 
 gem 'jsonapi-serializer'
 
 # Use Kredis to get higher-level data types in Redis [https://github.com/rails/kredis]
