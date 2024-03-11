@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2024_03_07_161437) do
+ActiveRecord::Schema[7.0].define(version: 2024_03_11_125001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -58,7 +58,7 @@ ActiveRecord::Schema[7.0].define(version: 2024_03_07_161437) do
   create_table "requests", force: :cascade do |t|
     t.string "description"
     t.string "type"
-    t.string "status"
+    t.string "status", default: "active"
     t.string "location"
     t.bigint "user_id", null: false
     t.datetime "created_at", null: false
@@ -67,6 +67,12 @@ ActiveRecord::Schema[7.0].define(version: 2024_03_07_161437) do
     t.date "date"
     t.time "time"
     t.string "taskType"
+    t.boolean "archived", default: false
+    t.datetime "last_published_at", precision: nil
+    t.boolean "fulfilled", default: false
+    t.integer "volunteer_count", default: 0
+    t.float "latitude"
+    t.float "longitude"
     t.index ["user_id"], name: "index_requests_on_user_id"
   end
 

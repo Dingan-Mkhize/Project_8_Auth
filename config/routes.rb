@@ -13,12 +13,26 @@ Rails.application.routes.draw do
   # Fetch the current user's details
   get 'current_user', to: 'current_user#index'
 
+  # Routes for requests
+  resources :requests, only: [:show] do
+    member do
+      patch 'mark-as-completed', to: 'requests#mark_as_completed'
+      post 'republish', to: 'requests#republish'
+    end
+  end
+
+
   # Nested resources under users for requests
   resources :users do
-    # Existing requests route
-    resources :requests, only: [:create]
+    resources :requests, only: [:create, :show] do
+      # New route for marking a request as completed
+      member do
+        patch 'mark-as-completed', to: 'requests#mark_as_completed'
+        post 'republish', to: 'requests#republish'
+      end
+    end
 
-    # Add routes for fetching my requests and volunteered jobs
+    # Existing routes for fetching my requests and volunteered jobs
     member do
       get 'my-requests', to: 'requests#my_requests'
       get 'volunteered-jobs', to: 'volunteerings#volunteered_jobs'
