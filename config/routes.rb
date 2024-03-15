@@ -19,13 +19,16 @@ Rails.application.routes.draw do
       patch 'mark-as-completed', to: 'requests#mark_as_completed'
       post 'republish', to: 'requests#republish'
     end
-  end
 
+    # Correctly place the collection block here, inside the resources :requests block
+    collection do
+      get 'active', to: 'requests#all_active_requests'
+    end
+  end  # This end closes the resources :requests block
 
   # Nested resources under users for requests
   resources :users do
     resources :requests, only: [:create, :show] do
-      # New route for marking a request as completed
       member do
         patch 'mark-as-completed', to: 'requests#mark_as_completed'
         post 'republish', to: 'requests#republish'
@@ -42,3 +45,4 @@ Rails.application.routes.draw do
   # You might need to define a root or other routes here
   # root "some_controller#some_action"
 end
+

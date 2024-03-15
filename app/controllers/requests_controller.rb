@@ -90,6 +90,14 @@ class RequestsController < ApplicationController
     end
   end
 
+  def all_active_requests
+    active_requests = Request.where(status: 'active', archived: false)
+                            .select(:id, :title, :description,:location, :latitude, :longitude, :date,:time, :taskType, :last_published_at,:volunteer_count)
+                            .order(last_published_at: :desc)
+
+    render json: active_requests
+  end
+
   private
 
   def request_params
