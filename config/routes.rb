@@ -14,7 +14,9 @@ Rails.application.routes.draw do
   get 'current_user', to: 'current_user#index'
 
   # Routes for requests
-  resources :requests, only: [:show] do
+  resources :requests, only: [:index, :show] do
+    resources :messages, only: [:index, :create]
+    
     member do
       patch 'mark-as-completed', to: 'requests#mark_as_completed'
       post 'republish', to: 'requests#republish'
@@ -26,9 +28,11 @@ Rails.application.routes.draw do
     end
   end  # This end closes the resources :requests block
 
+  get '/users/messageable', to: 'users#messageable'
+
   # Nested resources under users for requests
   resources :users do
-    resources :requests, only: [:create, :show] do
+    resources :requests, only: [:create, :show, :update] do
       member do
         patch 'mark-as-completed', to: 'requests#mark_as_completed'
         post 'republish', to: 'requests#republish'
