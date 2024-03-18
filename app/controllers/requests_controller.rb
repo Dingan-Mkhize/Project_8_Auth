@@ -1,6 +1,6 @@
 class RequestsController < ApplicationController
   before_action :authenticate_user!, only: [:index, :create, :show, :mark_as_completed, :republish, :update]
-  before_action :set_request, only: [:show, :mark_as_completed, :republish, :update]
+  before_action :set_request, only: [:show, :mark_as_completed, :republish, :update, :volunteer]
 
   def index
     requests = current_user.requests.where(archived: false)
@@ -98,14 +98,42 @@ class RequestsController < ApplicationController
     end
   end
 
-  private
+  def volunteer
+    # Assuming @request is correctly set by the set_request method
+    if @request.nil?
+      render json: { error: "Request not found" }, status: :not_found
+      return
+    end
 
-  def set_request
-    @request = current_user.requests.find_by(id: params[:id])
+    # Prevent users from volunteering for their own requests
+    if @request.user_id == current_user.id
+      render json: { error: "You cannot volunteer for your own request." }, status: :forbidden
+    else
+      volunteering = Volunteering.new(
+        user_id: current_user.id,
+        volunteereable: @request
+      )
+
+      if volunteering.save
+        # Successfully created the volunteering record
+        render json: { message: "You have successfully volunteered." }, status: :ok
+      else
+        # Failed to create the volunteering record
+        render json: { error: volunteering.errors.full_messages.to_sentence }, status: :unprocessable_entity
+      end
+    end
   end
 
+
+  private
+
   def request_params
-    params.require(:request).permit(:title, :description, :location, :date, :time, :taskType, :latitude, :longitude)
+  params.require(:request).permit(:title, :description, :location, :date, :time, :taskType, :latitude, :longitude)
+end
+
+  def set_request
+    @request = Request.find_by(id: params[:id])
+    Rails.logger.debug { "Request found: #{@request.inspect}" }
   end
 
   def can_be_republished?(request)

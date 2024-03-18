@@ -20,6 +20,7 @@ Rails.application.routes.draw do
     member do
       patch 'mark-as-completed', to: 'requests#mark_as_completed'
       post 'republish', to: 'requests#republish'
+      post 'volunteer', to: 'requests#volunteer'
     end
 
     # Correctly place the collection block here, inside the resources :requests block
