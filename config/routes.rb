@@ -10,10 +10,8 @@ Rails.application.routes.draw do
     registrations: 'users/registrations'
   }
 
-  # Fetch the current user's details
   get 'current_user', to: 'current_user#index'
 
-  # Routes for requests
   resources :requests, only: [:index, :show] do
     resources :messages, only: [:index, :create]
     
@@ -21,17 +19,17 @@ Rails.application.routes.draw do
       patch 'mark-as-completed', to: 'requests#mark_as_completed'
       post 'republish', to: 'requests#republish'
       post 'volunteer', to: 'requests#volunteer'
+      # Adding a route for initiating messaging for a request
+      get 'initiate-message', to: 'messages#new', as: :initiate_message
     end
 
-    # Correctly place the collection block here, inside the resources :requests block
     collection do
       get 'active', to: 'requests#all_active_requests'
     end
-  end  # This end closes the resources :requests block
+  end
 
   get '/users/messageable', to: 'users#messageable'
 
-  # Nested resources under users for requests
   resources :users do
     resources :requests, only: [:create, :show, :update] do
       member do
@@ -40,7 +38,6 @@ Rails.application.routes.draw do
       end
     end
 
-    # Existing routes for fetching my requests and volunteered jobs
     member do
       get 'my-requests', to: 'requests#my_requests'
       get 'volunteered-jobs', to: 'volunteerings#volunteered_jobs'
@@ -50,4 +47,5 @@ Rails.application.routes.draw do
   # You might need to define a root or other routes here
   # root "some_controller#some_action"
 end
+
 
