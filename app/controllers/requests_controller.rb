@@ -4,7 +4,10 @@ class RequestsController < ApplicationController
 
   def index
     own_requests = current_user.requests.where(archived: false)
-    volunteered_requests = Request.joins(:volunteerings).where(volunteerings: { user_id: current_user.id })
+    
+    volunteered_requests = Request.joins(:volunteerings)
+                                .where(volunteerings: { user_id: current_user.id })
+                                .where(archived: false)
 
     combined_requests = (own_requests + volunteered_requests).uniq
 

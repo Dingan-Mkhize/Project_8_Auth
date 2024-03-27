@@ -44,6 +44,12 @@ Rails.application.routes.draw do
     end
   end
 
+  resources :volunteerings do
+  member do
+    patch 'mark-as-completed', to: 'volunteerings#mark_as_completed'
+  end
+end
+
   # You might need to define a root or other routes here
   # root "some_controller#some_action"
 end
