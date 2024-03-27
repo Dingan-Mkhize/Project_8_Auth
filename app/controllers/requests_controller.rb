@@ -3,8 +3,12 @@ class RequestsController < ApplicationController
   before_action :set_request, only: [:show, :mark_as_completed, :republish, :update, :volunteer]
 
   def index
-    requests = current_user.requests.where(archived: false)
-    render json: requests.as_json(only: [:id, :title])
+    own_requests = current_user.requests.where(archived: false)
+    volunteered_requests = Request.joins(:volunteerings).where(volunteerings: { user_id: current_user.id })
+
+    combined_requests = (own_requests + volunteered_requests).uniq
+
+    render json: combined_requests.as_json(only: [:id, :title])
   end
 
   def create
@@ -26,10 +30,17 @@ class RequestsController < ApplicationController
   end
 
   def show
-    # The @request instance variable is now set by the set_request method
-    is_requester = @request.user == current_user
-    volunteers_info = @request.volunteers.select(:id, "first_name || ' ' || last_name AS name").as_json
-    messages_info = @request.messages.order(created_at: :asc).as_json(include: { sender: { only: [:id, :name, :email] } })
+  is_requester = @request.user == current_user
+  volunteers_info = @request.volunteers.select(:id, "first_name || ' ' || last_name AS name").as_json
+
+  # Filter messages so users only see the ones relevant to them
+  messages_info = if current_user.id == @request.user_id
+                    # If the user is the requester, they see all messages
+                    @request.messages.order(created_at: :asc)
+                  else
+                    # If the user is not the requester, they only see messages where they are the sender or receiver
+                    @request.messages.where("sender_id = ? OR receiver_id = ?", current_user.id, current_user.id).order(created_at: :asc)
+                  end
 
     render json: {
       id: @request.id,
@@ -46,7 +57,7 @@ class RequestsController < ApplicationController
       fulfilled: @request.fulfilled,
       isRequester: is_requester,
       volunteers: volunteers_info,
-      messages: messages_info
+      messages: messages_info.as_json(include: { sender: { only: [:id, :name, :email] } })
     }
   end
 
@@ -99,15 +110,16 @@ class RequestsController < ApplicationController
   end
 
   def volunteer
-    # Assuming @request is correctly set by the set_request method
+  ActiveRecord::Base.transaction do
     if @request.nil?
       render json: { error: "Request not found" }, status: :not_found
-      return
+      raise ActiveRecord::Rollback
     end
 
     # Prevent users from volunteering for their own requests
     if @request.user_id == current_user.id
       render json: { error: "You cannot volunteer for your own request." }, status: :forbidden
+      raise ActiveRecord::Rollback
     else
       volunteering = Volunteering.new(
         user_id: current_user.id,
@@ -115,15 +127,42 @@ class RequestsController < ApplicationController
       )
 
       if volunteering.save
-        # Successfully created the volunteering record
-        render json: { message: "You have successfully volunteered." }, status: :ok
+        @request.increment!(:volunteer_count)
+        if @request.volunteer_count >= 5
+          @request.update(hidden: true)
+        end
+
+        # Message to the requester
+        message_to_requester = Message.create(
+          request_id: @request.id,
+          sender_id: current_user.id,
+          receiver_id: @request.user_id,
+          content: "I've volunteered to help with your request: #{@request.title}. Looking forward to working together!"
+        )
+
+        # Message to the volunteer
+        message_to_volunteer = Message.create(
+          request_id: @request.id,
+          sender_id: @request.user_id, # Assuming the system or the requester as the sender
+          receiver_id: current_user.id,
+          content: "Thank you for volunteering to help with #{@request.title}. The requester has been notified, and you can start communicating directly through this chat."
+        )
+
+        unless message_to_requester.persisted? && message_to_volunteer.persisted?
+          render json: { error: "Failed to send initial messages." }, status: :unprocessable_entity
+          raise ActiveRecord::Rollback
+        end
+
+        # Successfully created the volunteering record and the messages
+        render json: { message: "You have successfully volunteered. Initial messages have been sent to both you and the requester." }, status: :ok
       else
         # Failed to create the volunteering record
         render json: { error: volunteering.errors.full_messages.to_sentence }, status: :unprocessable_entity
+        raise ActiveRecord::Rollback
       end
     end
   end
-
+end
 
   private
 
