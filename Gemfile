@@ -53,5 +53,9 @@ end
 
 group :test do
   gem "rspec-rails", "~> 6.0"
+  gem "factory_bot_rails"
+  gem "faker"
+  gem "shoulda-matchers", "~> 4.0"
+  gem "database_cleaner-active_record"
 end
 

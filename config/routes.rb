@@ -25,6 +25,7 @@ Rails.application.routes.draw do
 
     collection do
       get 'active', to: 'requests#all_active_requests'
+      get 'unfulfilled-count', to: 'requests#unfulfilled_count'
     end
   end
 

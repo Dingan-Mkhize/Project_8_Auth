@@ -21,6 +21,8 @@ class User < ApplicationRecord
   has_many :volunteerings
   has_many :volunteered_requests, through: :volunteerings, source: :volunteereable, source_type: 'Request'
 
+  validates :jti, uniqueness: true
+
   def conversations
     Message.where(sender_id: id).or(Message.where(receiver_id: id))
             .group_by { |message| [message.sender_id, message.receiver_id].sort }

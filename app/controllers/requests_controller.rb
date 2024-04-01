@@ -167,6 +167,11 @@ class RequestsController < ApplicationController
   end
 end
 
+def unfulfilled_count
+    count = Request.where(fulfilled: false, archived: false).count
+    render json: { unfulfilled_count: count }
+  end
+
   private
 
   def request_params

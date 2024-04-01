@@ -1,6 +1,6 @@
 class Request < ApplicationRecord
   belongs_to :user
-  has_many :messages
+  has_many :messages, dependent: :destroy
   has_many :volunteerings, as: :volunteereable
   has_many :volunteers, through: :volunteerings, source: :user
 
@@ -11,8 +11,9 @@ class Request < ApplicationRecord
 
   # Method to determine if the request can be republished
   def can_be_republished?
-    !fulfilled && volunteers.count < 5 && (last_published_at.nil? || last_published_at < 24.hours.ago)
-  end
+  puts "Debug inside method - Last Published At: #{last_published_at}, Current Time: #{Time.zone.now}, Comparison: #{last_published_at < 24.hours.ago}"
+  !fulfilled && volunteers.count < 5 && (last_published_at.nil? || last_published_at < 24.hours.ago)
+end
 
   # Method to update request as fulfilled
   def fulfill
