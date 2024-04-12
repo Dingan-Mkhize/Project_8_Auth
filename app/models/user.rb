@@ -3,9 +3,9 @@ class User < ApplicationRecord
 
   # Include default devise modules. Others available are:
   # :confirmable, :lockable, :timeoutable, :trackable and :omniauthable
-  devise  :database_authenticatable, :registerable,
-          :recoverable, :rememberable, :validatable,
-          :jwt_authenticatable, jwt_revocation_strategy: self
+  devise :database_authenticatable, :registerable,
+         :recoverable, :rememberable, :validatable,
+         :jwt_authenticatable, jwt_revocation_strategy: self
 
   # Attach a government_id to the user
   has_one_attached :government_id
@@ -22,6 +22,9 @@ class User < ApplicationRecord
   has_many :volunteered_requests, through: :volunteerings, source: :volunteereable, source_type: 'Request'
 
   validates :jti, uniqueness: true
+  validates :email, format: { with: /\A[^@\s]+@[^@\s]+\.[^@\s]+\z/, message: "is invalid" }
+  validates :first_name, :last_name, length: { maximum: 255 }, allow_blank: true
+
 
   def conversations
     Message.where(sender_id: id).or(Message.where(receiver_id: id))
@@ -34,4 +37,9 @@ class User < ApplicationRecord
               }
             end
   end
+
+  def full_name
+    "#{first_name} #{last_name}".strip
+  end
 end
+
