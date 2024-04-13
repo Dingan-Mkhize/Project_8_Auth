@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2024_03_23_103057) do
+ActiveRecord::Schema[7.0].define(version: 2024_04_12_154159) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -73,6 +73,7 @@ ActiveRecord::Schema[7.0].define(version: 2024_03_23_103057) do
     t.integer "volunteer_count", default: 0
     t.float "latitude"
     t.float "longitude"
+    t.boolean "hidden"
     t.index ["user_id"], name: "index_requests_on_user_id"
   end
 
