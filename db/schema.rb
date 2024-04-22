@@ -73,7 +73,7 @@ ActiveRecord::Schema[7.0].define(version: 2024_04_22_075027) do
     t.integer "volunteer_count", default: 0
     t.float "latitude"
     t.float "longitude"
-    t.boolean "hidden"
+    t.boolean "hidden", default: false, null: false
     t.boolean "unfulfilled", default: false
     t.index ["user_id"], name: "index_requests_on_user_id"
   end
