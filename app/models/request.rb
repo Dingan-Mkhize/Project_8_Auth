@@ -1,24 +1,31 @@
 class Request < ApplicationRecord
   belongs_to :user
   has_many :messages, dependent: :destroy
-  has_many :volunteerings, as: :volunteereable
+  has_many :volunteerings, as: :volunteereable, dependent: :destroy
   has_many :volunteers, through: :volunteerings, source: :user
 
-  # Add a callback to set the last_published_at when a request is created
+  # Constants for status values to ensure consistency
+  STATUSES = { active: 'active', completed: 'completed', unfulfilled: 'unfulfilled', pending: 'pending', fulfilled: 'fulfilled' }.freeze
+
+  # Enums for handling status values
+  enum status: STATUSES
+
+  # Validations
+  validates :taskType, presence: true, inclusion: { in: ['material-need', 'one-time', 'recurring'], message: "%{value} is not a valid task type" }
+  validates :status, presence: true, inclusion: { in: STATUSES.values }
+
+  # Callbacks
   before_create :set_last_published_at
 
-  validates :taskType, presence: true, inclusion: { in: ['material-need', 'one-time', 'recurring'], message: "%{value} is not a valid task type" }
-
-  # Method to determine if the request can be republished
+  # Determines if the request can be republished based on several conditions
   def can_be_republished?
-  puts "Debug inside method - Last Published At: #{last_published_at}, Current Time: #{Time.zone.now}, Comparison: #{last_published_at < 24.hours.ago}"
-  !fulfilled && volunteers.count < 5 && (last_published_at.nil? || last_published_at < 24.hours.ago)
+  # puts "Debug: Last Published At: #{last_published_at}, Current Time: #{Time.current}, Comparison: #{last_published_at < 24.hours.ago}"
+  !fulfilled? && volunteers.count < 5 && (last_published_at.nil? || last_published_at < 24.hours.ago)
 end
 
-  # Method to update request as fulfilled
   def fulfill
-    update(fulfilled: true)
-  end
+  update(fulfilled: true, status: :fulfilled)
+end
 
   private
 
@@ -26,4 +33,5 @@ end
     self.last_published_at = Time.current
   end
 end
+
 

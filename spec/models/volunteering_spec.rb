@@ -1,4 +1,4 @@
-# spec/models/volunteering_spec.rb
+# spec/factories/models/volunteering_spec.rb
 require 'rails_helper'
 
 RSpec.describe Volunteering, type: :model do

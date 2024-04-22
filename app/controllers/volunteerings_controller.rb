@@ -1,24 +1,27 @@
 class VolunteeringsController < ApplicationController
-  before_action :authenticate_user!, only: [:volunteered_jobs, :mark_as_completed]
+  before_action :authenticate_user!, only: [:volunteered_jobs]
 
   def volunteered_jobs
-    # Since volunteers don't mark jobs as completed, 
-    # you may want to include additional checks or data, 
-    # such as whether the job is still active.
-    volunteerings = current_user.volunteerings.includes(:volunteereable).map do |volunteering|
-      {
-        id: volunteering.volunteereable_id,
-        title: volunteering.volunteereable.title,
-        description: volunteering.volunteereable.description,
-        location: volunteering.volunteereable.location,
-        date: volunteering.volunteereable.date,
-        time: volunteering.volunteereable.time,
-        status: volunteering.volunteereable.status,
-        # Add other fields as necessary
-      }
-    end
-    render json: volunteerings
+    # Fetch only active, non-fulfilled, and non-archived volunteerings by joining with the requests table
+    volunteerings = current_user.volunteerings
+    .joins("INNER JOIN requests ON volunteerings.volunteereable_id = requests.id AND volunteerings.volunteereable_type = 'Request'")
+    .where(requests: { archived: false })
+    .select("volunteerings.*, requests.title, requests.description, requests.location, requests.date, requests.time, requests.status, requests.fulfilled")
+
+  volunteerings_data = volunteerings.map do |volunteering|
+    {
+      id: volunteering.volunteereable_id,
+      title: volunteering.title,
+      description: volunteering.description,
+      location: volunteering.location,
+      date: volunteering.date,
+      time: volunteering.time,
+      status: volunteering.status,
+      fulfilled: volunteering.fulfilled
+      # Add other fields as necessary
+    }
   end
 
-  # Add any additional actions or methods required for the controller below...
+    render json: volunteerings_data
+  end
 end
