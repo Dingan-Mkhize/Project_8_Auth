@@ -59,6 +59,7 @@ class RequestsController < ApplicationController
       last_published_at: @request.last_published_at,
       volunteer_count: @request.volunteer_count,
       fulfilled: @request.fulfilled,
+      status: @request.status,
       isRequester: current_user == @request_owner,
       volunteers: volunteers_info,
       messages: messages_info.as_json(include: { sender: { only: [:id, :name, :email] } })
@@ -199,26 +200,25 @@ class RequestsController < ApplicationController
   end
 
   def republish
-    if @request.hidden && can_be_republished?(@request)
-      ActiveRecord::Base.transaction do
-        # Remove existing volunteerings for the request
-        @request.volunteerings.destroy_all
+  if can_be_republished?(@request)
+    ActiveRecord::Base.transaction do
+      # Remove existing volunteerings for the request
+      @request.volunteerings.destroy_all
 
-        # Reset volunteer_count and other necessary fields
-        @request.update(
-          status: 'active',
-          hidden: false,
-          last_published_at: Time.current,
-          volunteer_count: 0,
-          fulfilled: false
-        )
+      # Reset volunteer_count and other necessary fields
+      @request.update(
+        status: 'active',
+        last_published_at: Time.current,
+        volunteer_count: 0,
+        fulfilled: false
+      )
 
-        render json: { message: "Request republished successfully." }, status: :ok
-      end
-    else
-      render json: { error: "Request cannot be republished. It must be hidden, and either the volunteer count be less than or equal to 5, or at least 24 hours must have passed since the last publication." }, status: :forbidden
+      render json: { message: "Request republished successfully." }, status: :ok
     end
+  else
+    render json: { error: "Request cannot be republished. It must have either the volunteer count be less than or equal to 5, or at least 24 hours must have passed since the last publication." }, status: :forbidden
   end
+end
 
   # New methods added
 
