@@ -12,24 +12,32 @@ class Users::RegistrationsController < Devise::RegistrationsController
   # end
 
   # POST /resource
-  def create
-  super do |resource|
-    if resource.persisted?
-      sign_in(resource) # Sign in the user
+# POST /resource
+def create
+  build_resource(sign_up_params)
 
-      # Check if the JWT token is included in the response headers
+  resource.save
+  yield resource if block_given?
+  if resource.persisted?
+    if resource.active_for_authentication?
+      sign_up(resource_name, resource)
       token = response.headers['Authorization'].split(' ').last if response.headers['Authorization'].present?
-
-      Rails.logger.info "Sending token: #{token}" # Correct placement
-
       render json: {
         status: { code: 200, message: 'Signed up successfully.' },
         data: UserSerializer.new(resource).serializable_hash[:data][:attributes],
-        token: token # Send the token to the client
-      } and return
+        token: token
+      }, status: :created
+    else
+      expire_data_after_sign_in!
+      render json: { status: { code: 422, message: 'User registered but not active.' } }, status: :unprocessable_entity
     end
+  else
+    clean_up_passwords resource
+    set_minimum_password_length
+    render json: { status: { code: 422, message: resource.errors.full_messages.to_sentence } }, status: :unprocessable_entity
   end
 end
+
 
   # GET /resource/edit
   # def edit
