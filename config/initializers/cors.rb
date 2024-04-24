@@ -7,7 +7,7 @@
 
 Rails.application.config.middleware.insert_before 0, Rack::Cors do
   allow do
-    origins 'https://hands-united-react.herokuapp.com'
+    origins 'https://hands-united-react-302085c5109d.herokuapp.com'
 
     resource '*',
       headers: :any, 
