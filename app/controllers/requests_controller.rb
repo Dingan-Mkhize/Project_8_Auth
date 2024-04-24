@@ -105,12 +105,14 @@ class RequestsController < ApplicationController
     if can_be_republished?(@request)
       ActiveRecord::Base.transaction do
         @request.volunteerings.destroy_all
+        @request.messages.delete_all
         @request.update(
           status: :active,
           hidden: false,
           last_published_at: Time.current,
           volunteer_count: 0,
-          fulfilled: false
+          fulfilled: false,
+          unfulfilled: false
         )
         CheckRequestFulfillmentJob.set(wait: 24.hours).perform_later(@request.id)
         render json: { message: "Request republished successfully." }, status: :ok
@@ -172,13 +174,15 @@ class RequestsController < ApplicationController
         message_to_requester = @request.messages.create(
           sender_id: current_user.id,
           receiver_id: @request.user_id,
-          content: "I've volunteered to help with your request: #{@request.title}."
+          content: "I've volunteered to help with your request: #{@request.title}.",
+          archived: false 
         )
         
         message_to_volunteer = @request.messages.create(
           sender_id: @request.user_id,
           receiver_id: current_user.id,
-          content: "Thank you for volunteering. I look forward to working with you."
+          content: "Thank you for volunteering. I look forward to working with you.",
+          archived: false 
         )
 
         unless message_to_requester.persisted? && message_to_volunteer.persisted?
@@ -198,27 +202,6 @@ class RequestsController < ApplicationController
     count = Request.where(fulfilled: false, archived: false, hidden: false).count
     render json: { unfulfilled_count: count }
   end
-
-  def republish
-  if can_be_republished?(@request)
-    ActiveRecord::Base.transaction do
-      # Remove existing volunteerings for the request
-      @request.volunteerings.destroy_all
-
-      # Reset volunteer_count and other necessary fields
-      @request.update(
-        status: 'active',
-        last_published_at: Time.current,
-        volunteer_count: 0,
-        fulfilled: false
-      )
-
-      render json: { message: "Request republished successfully." }, status: :ok
-    end
-  else
-    render json: { error: "Request cannot be republished. It must have either the volunteer count be less than or equal to 5, or at least 24 hours must have passed since the last publication." }, status: :forbidden
-  end
-end
 
   # New methods added
 

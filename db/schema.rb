@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2024_04_22_075027) do
+ActiveRecord::Schema[7.0].define(version: 2024_04_24_113059) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -50,6 +50,7 @@ ActiveRecord::Schema[7.0].define(version: 2024_04_22_075027) do
     t.bigint "request_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.boolean "archived"
     t.index ["receiver_id"], name: "index_messages_on_receiver_id"
     t.index ["request_id"], name: "index_messages_on_request_id"
     t.index ["sender_id"], name: "index_messages_on_sender_id"
