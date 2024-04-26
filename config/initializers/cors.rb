@@ -13,6 +13,5 @@ Rails.application.config.middleware.insert_before 0, Rack::Cors do
       headers: :any, 
       expose: ['Authorization', 'Access-Token', 'Uid'],
       methods: [:get, :post, :patch, :put, :delete, :options, :head],
-      credentials: true
-  end
+      credentials: false
 end
