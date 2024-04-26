@@ -7,7 +7,7 @@
 
 Rails.application.config.middleware.insert_before 0, Rack::Cors do
   allow do
-    origins 'https://hands-united-react-302085c5109d.herokuapp.com'
+    origins '*' # This is for development only, to replace with app's URL for production.
 
     resource '*',
       headers: :any, 
