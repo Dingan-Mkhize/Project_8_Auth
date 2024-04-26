@@ -15,3 +15,4 @@ Rails.application.config.middleware.insert_before 0, Rack::Cors do
       methods: [:get, :post, :patch, :put, :delete, :options, :head],
       credentials: false
 end
+end
