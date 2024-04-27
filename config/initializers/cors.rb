@@ -7,12 +7,12 @@
 
 Rails.application.config.middleware.insert_before 0, Rack::Cors do
   allow do
-    origins '*' # This is for development only, to replace with app's URL for production.
+    origins 'project8auth-production.up.railway.app' # This is for development only, to replace with app's URL for production.
 
     resource '*',
       headers: :any, 
       expose: ['Authorization', 'Access-Token', 'Uid'],
       methods: [:get, :post, :patch, :put, :delete, :options, :head],
-      credentials: false
+      credentials: true
 end
 end
