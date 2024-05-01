@@ -2,7 +2,7 @@
 
 ## Usage
 
-To use this template,
+To use this template, this template
 
 1. Click the Use Template button to create a new repository
 2. Clone the new repository to your local machine
