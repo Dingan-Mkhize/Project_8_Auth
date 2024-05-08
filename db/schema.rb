@@ -50,7 +50,8 @@ ActiveRecord::Schema[7.0].define(version: 2024_04_24_113059) do
     t.bigint "request_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.boolean "archived"
+    t.boolean "archived", default: false, null: false
+    t.index ["archived"], name: "index_messages_on_archived"
     t.index ["receiver_id"], name: "index_messages_on_receiver_id"
     t.index ["request_id"], name: "index_messages_on_request_id"
     t.index ["sender_id"], name: "index_messages_on_sender_id"
@@ -69,7 +70,7 @@ ActiveRecord::Schema[7.0].define(version: 2024_04_24_113059) do
     t.time "time"
     t.string "taskType"
     t.boolean "archived", default: false
-    t.datetime "last_published_at", precision: nil
+    t.datetime "last_published_at"
     t.boolean "fulfilled", default: false
     t.integer "volunteer_count", default: 0
     t.float "latitude"
