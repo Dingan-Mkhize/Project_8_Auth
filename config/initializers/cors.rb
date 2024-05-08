@@ -7,7 +7,7 @@
 
 Rails.application.config.middleware.insert_before 0, Rack::Cors do
   allow do
-    origins 'p7volunteerapp-production.up.railway.app' # This is for development only, to replace with app's URL for production.
+    origins 'localhost:5173' # This is for development only, to replace with app's URL for production.
 
     resource '*',
       headers: :any, 
